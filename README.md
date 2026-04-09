@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# Система прогнозирования успеваемости обучающихся
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Современный enterprise-grade frontend для системы прогнозирования успеваемости и выявления рисков отчисления студентов.
 
-Currently, two official plugins are available:
+## Стек технологий
+- **Фреймворк:** React 18, Vite
+- **Язык:** TypeScript
+- **Стилизация:** Tailwind CSS v4, shadcn/ui
+- **Состояние:** MobX
+- **Роутинг:** React Router DOM
+- **API Клиент:** Axios
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Установка
 
-## React Compiler
+1. Клонируйте репозиторий:
+   ```bash
+   git clone <repository_url>
+   ```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+2. Установите зависимости:
+   ```bash
+   npm install
+   ```
 
-## Expanding the ESLint configuration
+3. Настройте переменные окружения:
+   Скопируйте `.env.example` в `.env` и укажите корректный URL для backend API.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Запуск в режиме разработки
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Откройте `http://localhost:5173/` в вашем браузере.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Демо аккаунты
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Роль | Логин | Пароль |
+|------|-------|--------|
+| Администратор | `admin_demo` | `Admin12345!` |
+| Преподаватель | `teacher_demo` | `Teacher12345!` |
+| Куратор | `curator_demo` | `Curator12345!` |
+
+## Структура проекта (FSD-подобная)
+
+- `/src/app/` — Провайдеры, стили, React Router, точка входа.
+- `/src/pages/` — Основные страницы приложения (Dashboard, Students, Groups и т.д.).
+- `/src/widgets/` — Самостоятельные крупные элементы UI (AppShell, Sidebar, Topbar).
+- `/src/stores/` — Глобальные MobX сторы (RootStore, AuthStore, StudentsStore...).
+- `/src/shared/` — Общие компоненты, константы, типы, настройка API клиента.
+- `/src/components/ui/` — Компоненты базовой дизайн системы (shadcn/ui).
+
+## Сборка для Production
+
+```bash
+npm run build
 ```
+Готовые файлы будут в папке `dist/`.
