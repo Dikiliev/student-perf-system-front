@@ -1,29 +1,92 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '@/app/providers/StoreProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RiskBadge } from '@/shared/ui/RiskBadge';
-import { ArrowLeft, RefreshCw, Mail, GraduationCap, Calendar, BookOpen, Clock, Users, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Mail, GraduationCap, Calendar, BookOpen, Clock, Users, AlertTriangle, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { api } from '@/shared/api/api';
 
 export const StudentDetails = observer(() => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { studentsStore } = useStore();
 
+    const [subjects, setSubjects] = useState<any[]>([]);
+
+    // Grade Form State
+    const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
+    const [gradeSubject, setGradeSubject] = useState('');
+    const [gradeValue, setGradeValue] = useState('5');
+    const [gradeType, setGradeType] = useState('homework');
+    const [gradeDate, setGradeDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [isSubmittingGrade, setIsSubmittingGrade] = useState(false);
+
+    // Attendance Form State
+    const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+    const [attSubject, setAttSubject] = useState('');
+    const [attStatus, setAttStatus] = useState('present');
+    const [attDate, setAttDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [isSubmittingAtt, setIsSubmittingAtt] = useState(false);
+
     useEffect(() => {
         if (id) {
             studentsStore.fetchStudentDetails(parseInt(id, 10));
         }
+        api.get('/api/subjects/').then(r => setSubjects(r.data)).catch(console.error);
     }, [id, studentsStore]);
 
     const handleRecalculate = async () => {
         if (id) {
             await studentsStore.recalculatePrediction(parseInt(id, 10));
+        }
+    };
+
+    const handleAddGrade = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!id || !gradeSubject) return;
+        setIsSubmittingGrade(true);
+        try {
+            await studentsStore.addGrade({
+                student: parseInt(id, 10),
+                subject: parseInt(gradeSubject, 10),
+                value: parseInt(gradeValue, 10),
+                grade_type: gradeType,
+                graded_at: gradeDate,
+                comment: 'Введено вручную'
+            });
+            setIsGradeModalOpen(false);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsSubmittingGrade(false);
+        }
+    };
+
+    const handleAddAttendance = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!id || !attSubject) return;
+        setIsSubmittingAtt(true);
+        try {
+            await studentsStore.addAttendance({
+                student: parseInt(id, 10),
+                subject: parseInt(attSubject, 10),
+                lesson_date: attDate,
+                status: attStatus,
+                comment: 'Введено вручную'
+            });
+            setIsAttendanceModalOpen(false);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsSubmittingAtt(false);
         }
     };
 
@@ -203,8 +266,69 @@ export const StudentDetails = observer(() => {
                             <TabsTrigger value="grades">Успеваемость</TabsTrigger>
                             <TabsTrigger value="attendance">Посещаемость</TabsTrigger>
                         </TabsList>
+
+                        {/* GRADES TAB */}
                         <TabsContent value="grades" className="mt-4">
                             <Card>
+                                <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between border-b pb-4 mb-4">
+                                    <CardTitle className="text-lg">Журнал оценок</CardTitle>
+                                    <Dialog open={isGradeModalOpen} onOpenChange={setIsGradeModalOpen}>
+                                        <DialogTrigger asChild>
+                                            <Button size="sm" className="gap-1 h-8"><Plus className="w-4 h-4" /> Добавить</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <form onSubmit={handleAddGrade}>
+                                                <DialogHeader>
+                                                    <DialogTitle>Добавить оценку</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="space-y-4 py-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Дисциплина</label>
+                                                        <Select required value={gradeSubject} onValueChange={setGradeSubject}>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Выберите дисциплину" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {subjects.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Оценка</label>
+                                                        <Select required value={gradeValue} onValueChange={setGradeValue}>
+                                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="5">Отлично (5)</SelectItem>
+                                                                <SelectItem value="4">Хорошо (4)</SelectItem>
+                                                                <SelectItem value="3">Удовлетворительно (3)</SelectItem>
+                                                                <SelectItem value="2">Неуд (2)</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Тип работы</label>
+                                                        <Select required value={gradeType} onValueChange={setGradeType}>
+                                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="quiz">Самостоятельная</SelectItem>
+                                                                <SelectItem value="homework">ДЗ</SelectItem>
+                                                                <SelectItem value="exam">Экзамен</SelectItem>
+                                                                <SelectItem value="project">Проект</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Дата</label>
+                                                        <Input type="date" required value={gradeDate} onChange={e => setGradeDate(e.target.value)} max={new Date().toISOString().split('T')[0]} />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button type="submit" disabled={isSubmittingGrade}>{isSubmittingGrade ? 'Добавление...' : 'Добавить оценку'}</Button>
+                                                </DialogFooter>
+                                            </form>
+                                        </DialogContent>
+                                    </Dialog>
+                                </CardHeader>
                                 <CardContent className="p-0">
                                     {studentsStore.studentGrades.length > 0 ? (
                                         <div className="border-b last:border-0 p-4 space-y-3">
@@ -224,8 +348,57 @@ export const StudentDetails = observer(() => {
                                 </CardContent>
                             </Card>
                         </TabsContent>
+
+                        {/* ATTENDANCE TAB */}
                         <TabsContent value="attendance" className="mt-4">
                             <Card>
+                                <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between border-b pb-4 mb-4">
+                                    <CardTitle className="text-lg">Журнал посещаемости</CardTitle>
+                                    <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
+                                        <DialogTrigger asChild>
+                                            <Button size="sm" className="gap-1 h-8"><Plus className="w-4 h-4" /> Отметить</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <form onSubmit={handleAddAttendance}>
+                                                <DialogHeader>
+                                                    <DialogTitle>Отметить посещаемость</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="space-y-4 py-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Дисциплина</label>
+                                                        <Select required value={attSubject} onValueChange={setAttSubject}>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Выберите дисциплину" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {subjects.map(s => <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>)}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Статус</label>
+                                                        <Select required value={attStatus} onValueChange={setAttStatus}>
+                                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="present">Присутствовал</SelectItem>
+                                                                <SelectItem value="absent">Прогул</SelectItem>
+                                                                <SelectItem value="late">Опоздание</SelectItem>
+                                                                <SelectItem value="excused">Уважительная</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Дата занятия</label>
+                                                        <Input type="date" required value={attDate} onChange={e => setAttDate(e.target.value)} max={new Date().toISOString().split('T')[0]} />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button type="submit" disabled={isSubmittingAtt}>{isSubmittingAtt ? 'Сохранение...' : 'Отметить'}</Button>
+                                                </DialogFooter>
+                                            </form>
+                                        </DialogContent>
+                                    </Dialog>
+                                </CardHeader>
                                 <CardContent className="p-0">
                                     {studentsStore.studentAttendance.length > 0 ? (
                                         <div className="border-b last:border-0 p-4 space-y-3">

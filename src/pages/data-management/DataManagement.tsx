@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Database, Upload } from 'lucide-react';
+import { Database, Upload, PenTool } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExportDataView } from './Export';
 import { BulkImportView } from './BulkImport';
-// import { ManualEntryView } from './ManualEntry';
+import { ManualEntryView } from './ManualEntry';
 
 export const DataManagement = observer(() => {
     const [activeTab, setActiveTab] = useState('import');
@@ -23,9 +23,9 @@ export const DataManagement = observer(() => {
                     <TabsTrigger value="import" className="rounded-md data-[state=active]:bg-primary/10 data-[state=active]:text-primary gap-2">
                         <Upload className="h-4 w-4" /> Массовый импорт
                     </TabsTrigger>
-                    {/* <TabsTrigger value="manual" className="rounded-md data-[state=active]:bg-primary/10 data-[state=active]:text-primary gap-2">
+                    <TabsTrigger value="manual" className="rounded-md data-[state=active]:bg-primary/10 data-[state=active]:text-primary gap-2">
                         <PenTool className="h-4 w-4" /> Ручной ввод
-                    </TabsTrigger> */}
+                    </TabsTrigger>
                     <TabsTrigger value="export" className="rounded-md data-[state=active]:bg-primary/10 data-[state=active]:text-primary gap-2">
                         <Database className="h-4 w-4" /> Шаблоны и экспорт
                     </TabsTrigger>
@@ -35,9 +35,9 @@ export const DataManagement = observer(() => {
                     <BulkImportView />
                 </TabsContent>
 
-                {/* <TabsContent value="manual" className="border-none p-0 outline-none">
+                <TabsContent value="manual" className="border-none p-0 outline-none">
                     <ManualEntryView />
-                </TabsContent> */}
+                </TabsContent>
 
                 <TabsContent value="export" className="border-none p-0 outline-none">
                     <ExportDataView />

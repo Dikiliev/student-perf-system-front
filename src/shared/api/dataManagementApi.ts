@@ -21,7 +21,7 @@ export const dataManagementApi = {
      * Download an empty template for an entity.
      */
     downloadTemplate: async (entity: EntityType, format: 'csv' | 'xlsx' = 'csv') => {
-        const response = await api.get(`/data/templates/${entity}/download/`, {
+        const response = await api.get(`/api/data/templates/${entity}/download/`, {
             params: { format },
             responseType: 'blob', // Important for file downloads
         });
@@ -32,7 +32,7 @@ export const dataManagementApi = {
      * Download full database export for an entity.
      */
     exportData: async (entity: EntityType, format: 'csv' | 'xlsx' = 'csv') => {
-        const response = await api.get(`/data/export/${entity}/`, {
+        const response = await api.get(`/api/data/export/${entity}/`, {
             params: { format },
             responseType: 'blob',
         });
@@ -47,7 +47,7 @@ export const dataManagementApi = {
         formData.append('file', file);
         formData.append('mode', mode);
 
-        const response = await api.post(`/data/import/${entity}/preview/`, formData, {
+        const response = await api.post(`/api/data/import/${entity}/preview/`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -63,7 +63,7 @@ export const dataManagementApi = {
         formData.append('file', file);
         formData.append('mode', mode);
 
-        const response = await api.post(`/data/import/${entity}/commit/`, formData, {
+        const response = await api.post(`/api/data/import/${entity}/commit/`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

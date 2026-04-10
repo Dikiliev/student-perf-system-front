@@ -117,4 +117,43 @@ export class StudentsStore {
             throw e;
         }
     }
+
+    async createStudent(studentData: any) {
+        try {
+            const response = await api.post('/api/students/', studentData);
+            runInAction(() => {
+                this.students.unshift(response.data);
+            });
+            return response.data;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    }
+
+    async addGrade(data: { student: number, subject: number, value: number, grade_type: string, graded_at: string, comment?: string }) {
+        try {
+            const response = await api.post('/api/grades/', data);
+            runInAction(() => {
+                this.studentGrades.unshift(response.data);
+            });
+            return response.data;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    }
+
+    async addAttendance(data: { student: number, subject: number, lesson_date: string, status: string, comment?: string }) {
+        try {
+            const response = await api.post('/api/attendance/', data);
+            runInAction(() => {
+                this.studentAttendance.unshift(response.data);
+            });
+            return response.data;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    }
 }
